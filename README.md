@@ -1,4 +1,4 @@
-[![Terraform](https://img.shields.io/badge/Terraform-v0.12-%23623CE4?style=flat&logo=terraform)](https://www.terraform.io)
+[![Terraform](https://img.shields.io/badge/Terraform-v0.12-%23623CE4?style=flat&logo=terraform)](https://www.terraform.io) [![CircleCI](https://circleci.com/gh/nagelflorian/terraform-aws-s3-review-apps/tree/master.svg?style=svg&circle-token=817dd9be1ab76a988003819c50a5f6a5435e4a45)](https://circleci.com/gh/nagelflorian/terraform-aws-s3-review-apps/tree/master)
 
 # Terraform - AWS S3 Review Apps
 
