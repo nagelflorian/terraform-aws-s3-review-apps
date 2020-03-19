@@ -97,3 +97,21 @@ variable "cloudfront_price_class" {
   default     = "PriceClass_100"
   description = "AWS CloudFront Price Class"
 }
+
+variable "lifecycle_rule_enabled" {
+  type        = bool
+  default     = false
+  description = "Enable or disable lifecycle rule"
+}
+
+variable "noncurrent_version_expiration_days" {
+  type        = number
+  default     = 30
+  description = "Number of days to persist in the standard storage tier before moving to the infrequent access tier"
+}
+
+variable "expiration_days" {
+  type        = number
+  default     = 90
+  description = "Specifies when objects expire"
+}
