@@ -9,10 +9,11 @@ Terraform module designed to generate a AWS S3 based review-app setup used to pr
 ## Usage
 
 ```hcl
-module "aws_s3_review_app" {
-  source      = "git::https://github.com/nagelflorian/terraform-aws-s3-review-apps"
-  domain_name = "review.example.com"
-  name        = "my_review_app"
+module "s3-review-apps" {
+  source           = "nagelflorian/s3-review-apps/aws"
+  version          = "0.2.0"
+  domain_name      = "review.example.com"
+  name             = "my_review_app"
   route_53_zone_id = "MY_ROUTE_53_ZONE_ID"
 }
 ```
@@ -59,4 +60,4 @@ DOMAIN_NAME="foo" ROUTE_53_ROUTE_ID="bar" go test -v -count=1 -mod=vendor -timeo
 
 ## License
 
-This code is released under the MIT License. See LICENSE for full details.
+This code is released under the MIT License. See `LICENSE` for full details.
