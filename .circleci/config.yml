@@ -17,4 +17,4 @@ jobs:
             - ./node_modules
       - run:
           name: Test handler JavaScript code
-          command: npm test
+          command: npm test -- --ci --coverage --reporters=default --reporters=jest-junit
