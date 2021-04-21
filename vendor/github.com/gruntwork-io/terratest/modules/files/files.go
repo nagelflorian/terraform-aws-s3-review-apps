@@ -24,6 +24,18 @@ func FileExistsE(path string) (bool, error) {
 	return err == nil, nil
 }
 
+// IsExistingFile returns true if the path exists and is a file.
+func IsExistingFile(path string) bool {
+	fileInfo, err := os.Stat(path)
+	return err == nil && !fileInfo.IsDir()
+}
+
+// IsExistingDir returns true if the path exists and is a directory
+func IsExistingDir(path string) bool {
+	fileInfo, err := os.Stat(path)
+	return err == nil && fileInfo.IsDir()
+}
+
 // CopyTerraformFolderToTemp creates a copy of the given folder and all its contents in a temp folder with a unique name and the given prefix.
 // This is useful when running multiple tests in parallel against the same set of Terraform files to ensure the
 // tests don't overwrite each other's .terraform working directory and terraform.tfstate files. This method returns
@@ -62,6 +74,14 @@ func CopyTerragruntFolderToTemp(folderPath string, tempFolderPrefix string) (str
 // CopyFolderToTemp creates a copy of the given folder and all its filtered contents in a temp folder
 // with a unique name and the given prefix.
 func CopyFolderToTemp(folderPath string, tempFolderPrefix string, filter func(path string) bool) (string, error) {
+	exists, err := FileExistsE(folderPath)
+	if err != nil {
+		return "", err
+	}
+	if !exists {
+		return "", DirNotFoundError{Directory: folderPath}
+	}
+
 	tmpDir, err := ioutil.TempDir("", tempFolderPrefix)
 	if err != nil {
 		return "", err
