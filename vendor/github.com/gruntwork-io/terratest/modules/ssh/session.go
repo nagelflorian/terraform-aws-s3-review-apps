@@ -1,14 +1,14 @@
 package ssh
 
 import (
-	"fmt"
 	"io"
 	"net"
 	"reflect"
-	"testing"
+	"strconv"
 
 	"github.com/gruntwork-io/terratest/modules/collections"
 	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/testing"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -24,7 +24,7 @@ type SshConnectionOptions struct {
 
 // ConnectionString returns the connection string for an SSH connection.
 func (options *SshConnectionOptions) ConnectionString() string {
-	return fmt.Sprintf("%s:%d", options.Address, options.Port)
+	return net.JoinHostPort(options.Address, strconv.Itoa(options.Port))
 }
 
 // SshSession is a container object for all resources created by an SSH session. The reason we need this is so that we can do a
@@ -39,7 +39,7 @@ type SshSession struct {
 }
 
 // Cleanup cleans up an existing SSH session.
-func (sshSession *SshSession) Cleanup(t *testing.T) {
+func (sshSession *SshSession) Cleanup(t testing.TestingT) {
 	if sshSession == nil {
 		return
 	}
@@ -59,7 +59,7 @@ type JumpHostSession struct {
 }
 
 // Cleanup cleans the jump host session up.
-func (jumpHost *JumpHostSession) Cleanup(t *testing.T) {
+func (jumpHost *JumpHostSession) Cleanup(t testing.TestingT) {
 	if jumpHost == nil {
 		return
 	}
@@ -77,7 +77,7 @@ type Closeable interface {
 }
 
 // Close closes a Closeable.
-func Close(t *testing.T, closeable Closeable, ignoreErrors ...string) {
+func Close(t testing.TestingT, closeable Closeable, ignoreErrors ...string) {
 	if interfaceIsNil(closeable) {
 		return
 	}

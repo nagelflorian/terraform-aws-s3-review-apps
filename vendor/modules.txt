@@ -1,22 +1,56 @@
+# github.com/agext/levenshtein v1.2.1
+github.com/agext/levenshtein
+# github.com/apparentlymart/go-textseg v1.0.0
+github.com/apparentlymart/go-textseg/textseg
+# github.com/apparentlymart/go-textseg/v12 v12.0.0
+github.com/apparentlymart/go-textseg/v12/textseg
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/google/uuid v1.1.1
+# github.com/google/uuid v1.2.0
+## explicit
 github.com/google/uuid
-# github.com/gruntwork-io/terratest v0.24.2
+# github.com/gruntwork-io/terratest v0.32.24
+## explicit
 github.com/gruntwork-io/terratest/modules/collections
-github.com/gruntwork-io/terratest/modules/customerrors
 github.com/gruntwork-io/terratest/modules/files
 github.com/gruntwork-io/terratest/modules/logger
 github.com/gruntwork-io/terratest/modules/retry
 github.com/gruntwork-io/terratest/modules/shell
 github.com/gruntwork-io/terratest/modules/ssh
 github.com/gruntwork-io/terratest/modules/terraform
+github.com/gruntwork-io/terratest/modules/testing
+# github.com/hashicorp/errwrap v1.0.0
+github.com/hashicorp/errwrap
+# github.com/hashicorp/go-multierror v1.1.0
+github.com/hashicorp/go-multierror
+# github.com/hashicorp/hcl/v2 v2.8.2
+github.com/hashicorp/hcl/v2
+github.com/hashicorp/hcl/v2/ext/customdecode
+github.com/hashicorp/hcl/v2/hclparse
+github.com/hashicorp/hcl/v2/hclsyntax
+github.com/hashicorp/hcl/v2/json
+# github.com/hashicorp/terraform-json v0.9.0
+github.com/hashicorp/terraform-json
+# github.com/jinzhu/copier v0.0.0-20190924061706-b57f9002281a
+github.com/jinzhu/copier
+# github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7
+github.com/mitchellh/go-wordwrap
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/stretchr/testify v1.4.0
+# github.com/stretchr/testify v1.7.0
+## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
-# golang.org/x/crypto v0.0.0-20200109152110-61a87790db17
+# github.com/zclconf/go-cty v1.2.1
+github.com/zclconf/go-cty/cty
+github.com/zclconf/go-cty/cty/convert
+github.com/zclconf/go-cty/cty/function
+github.com/zclconf/go-cty/cty/function/stdlib
+github.com/zclconf/go-cty/cty/gocty
+github.com/zclconf/go-cty/cty/json
+github.com/zclconf/go-cty/cty/set
+# golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+golang.org/x/crypto/blowfish
 golang.org/x/crypto/chacha20
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/ed25519
@@ -25,9 +59,13 @@ golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/agent
-# golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
+golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
+# golang.org/x/net v0.0.0-20201021035429-f5854403a974
 golang.org/x/net/context
-# golang.org/x/sys v0.0.0-20200107162124-548cf772de50
+# golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
 golang.org/x/sys/cpu
-# gopkg.in/yaml.v2 v2.2.4
-gopkg.in/yaml.v2
+# golang.org/x/text v0.3.3
+golang.org/x/text/transform
+golang.org/x/text/unicode/norm
+# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+gopkg.in/yaml.v3
