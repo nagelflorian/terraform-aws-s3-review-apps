@@ -1,5 +1,5 @@
 module "label" {
-  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.22.1"
+  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.25.0"
   enabled     = var.enabled
   namespace   = var.namespace
   environment = var.environment
@@ -29,14 +29,20 @@ resource "aws_acm_certificate" "cert" {
 }
 
 resource "aws_route53_record" "cert_validation" {
-  count = var.enabled ? 1 : 0
+  for_each = {
+    for option in aws_acm_certificate.cert[0].domain_validation_options : option.domain_name => {
+      name   = option.resource_record_name
+      type   = option.resource_record_type
+      record = option.resource_record_value
+    }
+  }
 
+  name     = each.value.name
   provider = aws.virginia
-  name     = aws_acm_certificate.cert[0].domain_validation_options.0.resource_record_name
-  type     = aws_acm_certificate.cert[0].domain_validation_options.0.resource_record_type
-  zone_id  = var.route_53_zone_id
-  records  = [aws_acm_certificate.cert[0].domain_validation_options.0.resource_record_value]
+  records  = [each.value.record]
   ttl      = 60
+  type     = each.value.type
+  zone_id  = var.route_53_zone_id
 }
 
 resource "aws_acm_certificate_validation" "cert" {
@@ -44,7 +50,7 @@ resource "aws_acm_certificate_validation" "cert" {
 
   provider                = aws.virginia
   certificate_arn         = aws_acm_certificate.cert[0].arn
-  validation_record_fqdns = [aws_route53_record.cert_validation[0].fqdn]
+  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -54,9 +60,9 @@ resource "aws_acm_certificate_validation" "cert" {
 resource "aws_s3_bucket" "default" {
   count = var.enabled ? 1 : 0
 
-  bucket        = var.domain_name
+  provider      = aws.virginia
   acl           = "private"
-  region        = "us-east-1"
+  bucket        = var.domain_name
   force_destroy = var.force_destroy
   policy        = var.policy
 
@@ -96,8 +102,9 @@ resource "aws_s3_bucket" "default" {
 resource "aws_s3_bucket_policy" "default" {
   count = var.enabled ? 1 : 0
 
-  bucket = aws_s3_bucket.default[0].id
-  policy = <<POLICY
+  provider = aws.virginia
+  bucket   = aws_s3_bucket.default[0].id
+  policy   = <<POLICY
 {
   "Version": "2008-10-17",
   "Id": "${module.label.id}_cloudfront_access",
@@ -119,6 +126,7 @@ POLICY
 resource "aws_s3_bucket_public_access_block" "block_public_access" {
   count = var.enabled ? 1 : 0
 
+  provider                = aws.virginia
   bucket                  = aws_s3_bucket.default[0].id
   block_public_acls       = true
   block_public_policy     = true
