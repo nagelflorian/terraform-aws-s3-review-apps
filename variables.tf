@@ -48,7 +48,7 @@ variable "tags" {
 
 variable "region" {
   type        = string
-  default     = ""
+  default     = "us-east-1"
   description = "If specified, the AWS region this bucket should reside in. Otherwise, the region used by the callee"
 }
 
