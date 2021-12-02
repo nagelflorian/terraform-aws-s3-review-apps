@@ -189,7 +189,7 @@ resource "aws_lambda_function" "lambda_origin_request" {
   function_name    = "${module.label.id}_lambda_origin_request"
   filename         = data.archive_file.lambda_origin_request_zip_file.output_path
   source_code_hash = data.archive_file.lambda_origin_request_zip_file.output_base64sha256
-  runtime          = "nodejs12.x"
+  runtime          = "nodejs14.x"
   handler          = "index.handler"
   publish          = true
 }
@@ -212,7 +212,7 @@ resource "aws_lambda_function" "lambda_viewer_request" {
   function_name    = "${module.label.id}_lambda_viewer_request"
   filename         = data.archive_file.lambda_viewer_request_zip_file.output_path
   source_code_hash = data.archive_file.lambda_viewer_request_zip_file.output_base64sha256
-  runtime          = "nodejs12.x"
+  runtime          = "nodejs14.x"
   handler          = "index.handler"
   publish          = true
 }
