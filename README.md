@@ -11,7 +11,7 @@ Terraform module designed to generate a AWS S3 based review-app setup used to pr
 ```hcl
 module "s3-review-apps" {
   source           = "nagelflorian/s3-review-apps/aws"
-  version          = "1.2.0"
+  version          = "1.3.0"
   domain_name      = "review.example.com"
   name             = "my_review_app"
   route_53_zone_id = "MY_ROUTE_53_ZONE_ID"
