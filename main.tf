@@ -201,6 +201,7 @@ resource "aws_lambda_function" "lambda_origin_request" {
   runtime          = "nodejs14.x"
   handler          = "index.handler"
   publish          = true
+  tracing_config   = var.tracing_config
 }
 
 data "archive_file" "lambda_viewer_request_zip_file" {
@@ -224,6 +225,7 @@ resource "aws_lambda_function" "lambda_viewer_request" {
   runtime          = "nodejs14.x"
   handler          = "index.handler"
   publish          = true
+  tracing_config   = var.tracing_config
 }
 
 # ----------------------------------------------------------------------------------------------------------------------

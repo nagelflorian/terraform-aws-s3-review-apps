@@ -133,3 +133,9 @@ variable "web_acl_id" {
   default     = null
   description = "The ID of the Amazon Web Services Web ACL to associate with the CloudFront distribution"
 }
+
+variable "tracing_config" {
+  type        = string
+  default     = null
+  description = "The tracing mode to use for the Lambda functions"
+}
