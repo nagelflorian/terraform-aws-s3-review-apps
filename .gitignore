@@ -34,3 +34,6 @@ override.tf.json
 local/*
 node_modules/*
 vendor/*
+
+# git hooks
+.husky
