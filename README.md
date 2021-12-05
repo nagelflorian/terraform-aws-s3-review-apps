@@ -32,9 +32,9 @@ module "s3-review-apps" {
 
 | Name                                                                        | Version |
 | --------------------------------------------------------------------------- | ------- |
-| <a name="provider_archive"></a> [archive](#provider_archive)                | 2.2.0   |
-| <a name="provider_aws"></a> [aws](#provider_aws)                            | 3.68.0  |
-| <a name="provider_aws.virginia"></a> [aws.virginia](#provider_aws.virginia) | 3.68.0  |
+| <a name="provider_archive"></a> [archive](#provider_archive)                | ~> 2.2  |
+| <a name="provider_aws"></a> [aws](#provider_aws)                            | ~> 3.67 |
+| <a name="provider_aws.virginia"></a> [aws.virginia](#provider_aws.virginia) | ~> 3.67 |
 
 ## Modules
 
