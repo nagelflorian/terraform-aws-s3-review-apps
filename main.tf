@@ -96,6 +96,15 @@ resource "aws_s3_bucket" "default" {
     }
   }
 
+  dynamic "logging" {
+    for_each = length(keys(var.s3_logging_config)) == 0 ? [] : [var.s3_logging_config]
+
+    content {
+      target_bucket = logging.value.target_bucket
+      target_prefix = lookup(logging.value, "target_prefix", null)
+    }
+  }
+
   tags = module.label.tags
 }
 
@@ -296,6 +305,16 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     cloudfront_default_certificate = false
     minimum_protocol_version       = "TLSv1.2_2021"
     ssl_support_method             = "sni-only"
+  }
+
+  dynamic "logging_config" {
+    for_each = length(keys(var.cloudfront_logging_config)) == 0 ? [] : [var.cloudfront_logging_config]
+
+    content {
+      bucket          = logging_config.value["bucket"]
+      prefix          = lookup(logging_config.value, "prefix", null)
+      include_cookies = lookup(logging_config.value, "include_cookies", null)
+    }
   }
 }
 

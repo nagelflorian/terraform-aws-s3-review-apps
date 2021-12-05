@@ -116,6 +116,18 @@ variable "expiration_days" {
   description = "Specifies when objects expire"
 }
 
+variable "cloudfront_logging_config" {
+  description = "The logging configuration that controls how logs are written to your distribution (maximum one)."
+  type        = any
+  default     = {}
+}
+
+variable "s3_logging_config" {
+  description = "Map containing access bucket logging configuration."
+  type        = map(string)
+  default     = {}
+}
+
 variable "web_acl_id" {
   type        = string
   default     = null
