@@ -32,9 +32,9 @@ module "s3-review-apps" {
 
 | Name                                                                        | Version |
 | --------------------------------------------------------------------------- | ------- |
-| <a name="provider_archive"></a> [archive](#provider_archive)                | ~> 2.2  |
-| <a name="provider_aws"></a> [aws](#provider_aws)                            | ~> 3.67 |
-| <a name="provider_aws.virginia"></a> [aws.virginia](#provider_aws.virginia) | ~> 3.67 |
+| <a name="provider_archive"></a> [archive](#provider_archive)                | 2.2.0   |
+| <a name="provider_aws"></a> [aws](#provider_aws)                            | 3.68.0  |
+| <a name="provider_aws.virginia"></a> [aws.virginia](#provider_aws.virginia) | 3.68.0  |
 
 ## Modules
 
@@ -88,6 +88,7 @@ module "s3-review-apps" {
 | <a name="input_stage"></a> [stage](#input_stage)                                                                                        | Stage, e.g. 'prod', 'staging', 'dev', OR 'source', 'build', 'test', 'deploy', 'release'                                                                                                                                                                                     | `string`       | `""`               |    no    |
 | <a name="input_tags"></a> [tags](#input_tags)                                                                                           | Additional tags (e.g. `map('BusinessUnit','XYZ')`                                                                                                                                                                                                                           | `map(string)`  | `{}`               |    no    |
 | <a name="input_versioning_enabled"></a> [versioning_enabled](#input_versioning_enabled)                                                 | A state of versioning. Versioning is a means of keeping multiple variants of an object in the same bucket                                                                                                                                                                   | `bool`         | `true`             |    no    |
+| <a name="input_web_acl_id"></a> [web_acl_id](#input_web_acl_id)                                                                         | The ID of the Amazon Web Services Web ACL to associate with the CloudFront distribution                                                                                                                                                                                     | `string`       | `null`             |    no    |
 
 ## Outputs
 

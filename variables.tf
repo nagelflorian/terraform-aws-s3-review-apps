@@ -115,3 +115,9 @@ variable "expiration_days" {
   default     = 90
   description = "Specifies when objects expire"
 }
+
+variable "web_acl_id" {
+  type        = string
+  default     = null
+  description = "The ID of the Amazon Web Services Web ACL to associate with the CloudFront distribution"
+}
