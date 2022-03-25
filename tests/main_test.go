@@ -12,7 +12,7 @@ import (
 func TestReviewAppResources(t *testing.T) {
 	t.Parallel()
 
-	bucketName := uuid.New().String()[0:12]
+	name := uuid.New().String()[0:12]
 	domainName := os.Getenv("DOMAIN_NAME")
 	route53ZoneID := os.Getenv("ROUTE_53_ROUTE_ID")
 
@@ -27,7 +27,7 @@ func TestReviewAppResources(t *testing.T) {
 		TerraformDir: "../",
 		Vars: map[string]interface{}{
 			"domain_name":      domainName,
-			"name":             bucketName,
+			"name":             name,
 			"namespace":        "gh",
 			"stage":            "dev",
 			"route_53_zone_id": route53ZoneID,
@@ -39,7 +39,7 @@ func TestReviewAppResources(t *testing.T) {
 	defer terraform.Destroy(t, terraformOptions)
 	terraform.InitAndApply(t, terraformOptions)
 
-	expectedBucketName := bucketName
+	expectedBucketName := domainName
 	actualBucketName := terraform.Output(t, terraformOptions, "aws_s3_bucket_name")
 	assert.Equal(t, expectedBucketName, actualBucketName)
 }
