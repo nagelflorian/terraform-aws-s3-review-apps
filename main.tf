@@ -61,42 +61,64 @@ resource "aws_s3_bucket" "default" {
   count = var.enabled ? 1 : 0
 
   provider      = aws.virginia
-  acl           = "private"
   bucket        = var.domain_name
   force_destroy = var.force_destroy
   policy        = var.policy
 
-  versioning {
-    enabled = var.versioning_enabled
-  }
+  tags = module.label.tags
+}
 
-  lifecycle_rule {
-    id      = module.label.id
-    enabled = var.lifecycle_rule_enabled
-    tags    = module.label.tags
+resource "aws_s3_bucket_acl" "default" {
+  count = var.enabled ? 1 : 0
+
+  bucket   = aws_s3_bucket.default[0].id
+  provider = aws.virginia
+  acl      = "private"
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "default" {
+  count = var.enabled ? 1 : 0
+
+  bucket   = aws_s3_bucket.default[0].id
+  provider = aws.virginia
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm     = var.sse_algorithm
+      kms_master_key_id = var.kms_master_key_arn
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "default" {
+  count = var.enabled ? 1 : 0
+
+  bucket   = aws_s3_bucket.default[0].id
+  provider = aws.virginia
+  versioning_configuration {
+    status = var.versioning_enabled
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "default" {
+  count = var.enabled ? 1 : 0
+
+  bucket   = aws_s3_bucket.default[0].id
+  provider = aws.virginia
+
+  rule {
+    id     = module.label.id
+    status = var.lifecycle_rule_enabled
 
     noncurrent_version_transition {
-      days          = var.noncurrent_version_expiration_days
-      storage_class = "STANDARD_IA"
+      noncurrent_days = var.noncurrent_version_expiration_days
+      storage_class   = "STANDARD_IA"
     }
 
     expiration {
       days = var.expiration_days
     }
   }
-
-  # https://docs.aws.amazon.com/AmazonS3/latest/dev/bucket-encryption.html
-  # https://www.terraform.io/docs/providers/aws/r/s3_bucket.html#enable-default-server-side-encryption
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm     = var.sse_algorithm
-        kms_master_key_id = var.kms_master_key_arn
-      }
-    }
-  }
-
-  tags = module.label.tags
 }
 
 resource "aws_s3_bucket_policy" "default" {

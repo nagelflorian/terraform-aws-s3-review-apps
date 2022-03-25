@@ -65,8 +65,8 @@ variable "policy" {
 }
 
 variable "versioning_enabled" {
-  type        = bool
-  default     = true
+  type        = string
+  default     = "Enabled"
   description = "A state of versioning. Versioning is a means of keeping multiple variants of an object in the same bucket"
 }
 
@@ -99,8 +99,8 @@ variable "cloudfront_price_class" {
 }
 
 variable "lifecycle_rule_enabled" {
-  type        = bool
-  default     = false
+  type        = string
+  default     = "Disabled"
   description = "Enable or disable lifecycle rule"
 }
 
