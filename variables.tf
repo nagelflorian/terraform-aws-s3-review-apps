@@ -115,3 +115,15 @@ variable "expiration_days" {
   default     = 90
   description = "Specifies when objects expire"
 }
+
+variable "basic_auth_username" {
+  type        = string
+  default     = null
+  description = "The username to accept when using basic auth"
+}
+
+variable "basic_auth_password" {
+  type        = string
+  default     = null
+  description = "The password to accept when using basic auth"
+}

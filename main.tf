@@ -237,7 +237,17 @@ resource "aws_lambda_function" "lambda_viewer_request" {
   runtime          = "nodejs14.x"
   handler          = "index.handler"
   publish          = true
+
+  environment {
+    variables = {
+      BASIC_AUTH_USER_NAME = var.basic_auth_username,
+      BASIC_AUTH_PASSWORD  = var.basic_auth_password
+    }
+  }
 }
+
+# basic_auth_username
+# basic_auth_password
 
 # ----------------------------------------------------------------------------------------------------------------------
 # CREATE THE CLOUDFRONT DISTRIBUTION
