@@ -65,6 +65,13 @@ resource "aws_s3_bucket" "default" {
   force_destroy = var.force_destroy
   policy        = var.policy
 
+  lifecycle {
+    ignore_changes = [
+      server_side_encryption_configuration,
+      lifecycle_rule,
+    ]
+  }
+
   tags = module.label.tags
 }
 
