@@ -63,7 +63,6 @@ resource "aws_s3_bucket" "default" {
   provider      = aws.virginia
   bucket        = var.domain_name
   force_destroy = var.force_destroy
-  policy        = var.policy
 
   lifecycle {
     ignore_changes = [
