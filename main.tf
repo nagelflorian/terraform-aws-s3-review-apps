@@ -74,8 +74,20 @@ resource "aws_s3_bucket" "default" {
   tags = module.label.tags
 }
 
-resource "aws_s3_bucket_acl" "default" {
+resource "aws_s3_bucket_ownership_controls" "default" {
   count = var.enabled ? 1 : 0
+
+  bucket   = aws_s3_bucket.default[0].id
+  provider = aws.virginia
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+resource "aws_s3_bucket_acl" "default" {
+  count      = var.enabled ? 1 : 0
+  depends_on = [aws_s3_bucket_ownership_controls.default[0]]
 
   bucket   = aws_s3_bucket.default[0].id
   provider = aws.virginia
