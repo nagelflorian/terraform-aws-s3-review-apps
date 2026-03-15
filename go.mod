@@ -1,6 +1,6 @@
 module github.com/nagelflorian/aws-s3-review-apps
 
-go 1.24.0
+go 1.26.0
 
 require (
 	github.com/google/uuid v1.3.0
