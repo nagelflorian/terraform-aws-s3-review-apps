@@ -19,12 +19,4 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
-      - run: npm test -- --ci --coverage --reporters=default --reporters=jest-junit
-      - name: Report coverage to Code Climate
-        if: matrix.node-version == 22
-        env:
-          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-        run: |
-          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-          chmod +x ./cc-test-reporter
-          ./cc-test-reporter after-build -t lcov --debug
+      - run: npm test -- --ci
