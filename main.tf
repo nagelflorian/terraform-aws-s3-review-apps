@@ -1,3 +1,8 @@
+locals {
+  enabled      = var.enabled ? toset(["this"]) : toset([])
+  s3_origin_id = "S3-${var.domain_name}"
+}
+
 module "label" {
   source      = "cloudposse/label/null"
   version     = "0.25.0"
@@ -16,7 +21,7 @@ module "label" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 resource "aws_acm_certificate" "cert" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
   provider          = aws.virginia
   domain_name       = "*.${var.domain_name}"
@@ -31,7 +36,7 @@ resource "aws_acm_certificate" "cert" {
 
 resource "aws_route53_record" "cert_validation" {
   for_each = {
-    for option in aws_acm_certificate.cert[0].domain_validation_options : option.domain_name => {
+    for option in aws_acm_certificate.cert["this"].domain_validation_options : option.domain_name => {
       name   = option.resource_record_name
       type   = option.resource_record_type
       record = option.resource_record_value
@@ -47,10 +52,10 @@ resource "aws_route53_record" "cert_validation" {
 }
 
 resource "aws_acm_certificate_validation" "cert" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
   provider                = aws.virginia
-  certificate_arn         = aws_acm_certificate.cert[0].arn
+  certificate_arn         = aws_acm_certificate.cert["this"].arn
   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 }
 
@@ -59,7 +64,7 @@ resource "aws_acm_certificate_validation" "cert" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 resource "aws_s3_bucket" "default" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
   provider      = aws.virginia
   bucket        = var.domain_name
@@ -76,9 +81,9 @@ resource "aws_s3_bucket" "default" {
 }
 
 resource "aws_s3_bucket_ownership_controls" "default" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
-  bucket   = aws_s3_bucket.default[0].id
+  bucket   = aws_s3_bucket.default["this"].id
   provider = aws.virginia
 
   rule {
@@ -87,18 +92,18 @@ resource "aws_s3_bucket_ownership_controls" "default" {
 }
 
 resource "aws_s3_bucket_acl" "default" {
-  count      = var.enabled ? 1 : 0
-  depends_on = [aws_s3_bucket_ownership_controls.default[0]]
+  for_each   = local.enabled
+  depends_on = [aws_s3_bucket_ownership_controls.default["this"]]
 
-  bucket   = aws_s3_bucket.default[0].id
+  bucket   = aws_s3_bucket.default["this"].id
   provider = aws.virginia
   acl      = "private"
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "default" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
-  bucket   = aws_s3_bucket.default[0].id
+  bucket   = aws_s3_bucket.default["this"].id
   provider = aws.virginia
 
   rule {
@@ -110,9 +115,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "default" {
 }
 
 resource "aws_s3_bucket_versioning" "default" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
-  bucket   = aws_s3_bucket.default[0].id
+  bucket   = aws_s3_bucket.default["this"].id
   provider = aws.virginia
   versioning_configuration {
     status = var.versioning_enabled
@@ -120,9 +125,9 @@ resource "aws_s3_bucket_versioning" "default" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "default" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
-  bucket   = aws_s3_bucket.default[0].id
+  bucket   = aws_s3_bucket.default["this"].id
   provider = aws.virginia
 
   rule {
@@ -141,7 +146,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "default" {
 }
 
 data "aws_iam_policy_document" "s3_bucket_policy" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
   statement {
     sid    = "AllowCloudFrontServicePrincipal"
@@ -153,29 +158,29 @@ data "aws_iam_policy_document" "s3_bucket_policy" {
     }
 
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.default[0].arn}/*"]
+    resources = ["${aws_s3_bucket.default["this"].arn}/*"]
 
     condition {
       test     = "StringEquals"
       variable = "AWS:SourceArn"
-      values   = [aws_cloudfront_distribution.s3_distribution[0].arn]
+      values   = [aws_cloudfront_distribution.s3_distribution["this"].arn]
     }
   }
 }
 
 resource "aws_s3_bucket_policy" "default" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
   provider = aws.virginia
-  bucket   = aws_s3_bucket.default[0].id
-  policy   = data.aws_iam_policy_document.s3_bucket_policy[0].json
+  bucket   = aws_s3_bucket.default["this"].id
+  policy   = data.aws_iam_policy_document.s3_bucket_policy["this"].json
 }
 
 resource "aws_s3_bucket_public_access_block" "block_public_access" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
   provider                = aws.virginia
-  bucket                  = aws_s3_bucket.default[0].id
+  bucket                  = aws_s3_bucket.default["this"].id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -227,7 +232,7 @@ data "archive_file" "lambda_origin_request_zip_file" {
 }
 
 resource "aws_lambda_function" "lambda_origin_request" {
-  count    = var.enabled ? 1 : 0
+  for_each = local.enabled
   provider = aws.virginia
 
   role             = aws_iam_role.iam_for_lambda.arn
@@ -250,7 +255,7 @@ data "archive_file" "lambda_viewer_request_zip_file" {
 }
 
 resource "aws_lambda_function" "lambda_viewer_request" {
-  count    = var.enabled ? 1 : 0
+  for_each = local.enabled
   provider = aws.virginia
 
   role             = aws_iam_role.iam_for_lambda.arn
@@ -266,12 +271,8 @@ resource "aws_lambda_function" "lambda_viewer_request" {
 # CREATE THE CLOUDFRONT DISTRIBUTION
 # ----------------------------------------------------------------------------------------------------------------------
 
-locals {
-  s3_origin_id = "S3-${var.domain_name}"
-}
-
 resource "aws_cloudfront_origin_access_control" "default" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
   name                              = var.domain_name
   origin_access_control_origin_type = "s3"
@@ -280,7 +281,7 @@ resource "aws_cloudfront_origin_access_control" "default" {
 }
 
 resource "aws_cloudfront_cache_policy" "default" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
   name        = "${module.label.id}-cache-policy"
   min_ttl     = 0
@@ -304,12 +305,12 @@ resource "aws_cloudfront_cache_policy" "default" {
 }
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
   origin {
-    domain_name              = aws_s3_bucket.default[0].bucket_regional_domain_name
+    domain_name              = aws_s3_bucket.default["this"].bucket_regional_domain_name
     origin_id                = local.s3_origin_id
-    origin_access_control_id = aws_cloudfront_origin_access_control.default[0].id
+    origin_access_control_id = aws_cloudfront_origin_access_control.default["this"].id
   }
 
   enabled             = true
@@ -323,19 +324,19 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     allowed_methods        = ["GET", "HEAD"]
     cached_methods         = ["GET", "HEAD"]
     target_origin_id       = local.s3_origin_id
-    cache_policy_id        = aws_cloudfront_cache_policy.default[0].id
+    cache_policy_id        = aws_cloudfront_cache_policy.default["this"].id
     viewer_protocol_policy = "redirect-to-https"
 
     lambda_function_association {
       event_type   = "origin-request"
       include_body = false
-      lambda_arn   = aws_lambda_function.lambda_origin_request[0].qualified_arn
+      lambda_arn   = aws_lambda_function.lambda_origin_request["this"].qualified_arn
     }
 
     lambda_function_association {
       event_type   = "viewer-request"
       include_body = false
-      lambda_arn   = aws_lambda_function.lambda_viewer_request[0].qualified_arn
+      lambda_arn   = aws_lambda_function.lambda_viewer_request["this"].qualified_arn
     }
   }
 
@@ -348,7 +349,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   viewer_certificate {
-    acm_certificate_arn            = aws_acm_certificate_validation.cert[0].certificate_arn
+    acm_certificate_arn            = aws_acm_certificate_validation.cert["this"].certificate_arn
     cloudfront_default_certificate = false
     minimum_protocol_version       = "TLSv1.2_2021"
     ssl_support_method             = "sni-only"
@@ -360,7 +361,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 resource "aws_route53_record" "a_record" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
   zone_id = var.route_53_zone_id
   name    = "*.${var.domain_name}"
@@ -368,13 +369,13 @@ resource "aws_route53_record" "a_record" {
 
   alias {
     evaluate_target_health = false
-    name                   = aws_cloudfront_distribution.s3_distribution[0].domain_name
-    zone_id                = aws_cloudfront_distribution.s3_distribution[0].hosted_zone_id
+    name                   = aws_cloudfront_distribution.s3_distribution["this"].domain_name
+    zone_id                = aws_cloudfront_distribution.s3_distribution["this"].hosted_zone_id
   }
 }
 
 resource "aws_route53_record" "c_record" {
-  count = var.enabled ? 1 : 0
+  for_each = local.enabled
 
   zone_id = var.route_53_zone_id
   name    = "www.*.${var.domain_name}"

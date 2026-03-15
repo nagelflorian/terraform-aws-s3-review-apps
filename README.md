@@ -25,8 +25,6 @@ module "s3-review-apps" {
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
 | <a name="requirement_archive"></a> [archive](#requirement\_archive) | ~> 2.7 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.0 |
-| <a name="requirement_local"></a> [local](#requirement\_local) | ~> 2.7 |
-| <a name="requirement_null"></a> [null](#requirement\_null) | ~> 3.2 |
 
 ## Providers
 
