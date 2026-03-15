@@ -139,28 +139,35 @@ resource "aws_s3_bucket_lifecycle_configuration" "default" {
   }
 }
 
+data "aws_iam_policy_document" "s3_bucket_policy" {
+  count = var.enabled ? 1 : 0
+
+  statement {
+    sid    = "AllowCloudFrontServicePrincipal"
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.default[0].arn}/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values   = [aws_cloudfront_distribution.s3_distribution[0].arn]
+    }
+  }
+}
+
 resource "aws_s3_bucket_policy" "default" {
   count = var.enabled ? 1 : 0
 
   provider = aws.virginia
   bucket   = aws_s3_bucket.default[0].id
-  policy   = <<POLICY
-{
-  "Version": "2008-10-17",
-  "Id": "${module.label.id}_cloudfront_access",
-  "Statement": [
-    {
-      "Sid": "cloudfront_access",
-      "Effect": "Allow",
-      "Principal": {
-        "AWS": "${aws_cloudfront_origin_access_identity.origin_access_identity[0].iam_arn}"
-      },
-      "Action": "s3:GetObject",
-      "Resource": "${aws_s3_bucket.default[0].arn}/*"
-    }
-  ]
-}
-POLICY
+  policy   = data.aws_iam_policy_document.s3_bucket_policy[0].json
 }
 
 resource "aws_s3_bucket_public_access_block" "block_public_access" {
@@ -179,27 +186,24 @@ resource "aws_s3_bucket_public_access_block" "block_public_access" {
 # Used for rewriting headers to use a specific subdirectory within the target bucket for a given subdomain.
 # ----------------------------------------------------------------------------------------------------------------------
 
-resource "aws_iam_role" "iam_for_lambda" {
-  name = "${module.label.id}_iam_for_lambda"
+data "aws_iam_policy_document" "lambda_assume_role" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
 
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": [
-          "lambda.amazonaws.com",
-          "edgelambda.amazonaws.com"
-        ]
-      },
-      "Effect": "Allow",
-      "Sid": ""
+    principals {
+      type = "Service"
+      identifiers = [
+        "lambda.amazonaws.com",
+        "edgelambda.amazonaws.com",
+      ]
     }
-  ]
+  }
 }
-EOF
+
+resource "aws_iam_role" "iam_for_lambda" {
+  name               = "${module.label.id}_iam_for_lambda"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
 data "aws_iam_policy" "edge_execution" {
@@ -229,7 +233,7 @@ resource "aws_lambda_function" "lambda_origin_request" {
   function_name    = "${module.label.id}_lambda_origin_request"
   filename         = data.archive_file.lambda_origin_request_zip_file.output_path
   source_code_hash = data.archive_file.lambda_origin_request_zip_file.output_base64sha256
-  runtime          = "nodejs20.x"
+  runtime          = "nodejs22.x"
   handler          = "index.handler"
   publish          = true
 }
@@ -252,7 +256,7 @@ resource "aws_lambda_function" "lambda_viewer_request" {
   function_name    = "${module.label.id}_lambda_viewer_request"
   filename         = data.archive_file.lambda_viewer_request_zip_file.output_path
   source_code_hash = data.archive_file.lambda_viewer_request_zip_file.output_base64sha256
-  runtime          = "nodejs20.x"
+  runtime          = "nodejs22.x"
   handler          = "index.handler"
   publish          = true
 }
@@ -265,20 +269,46 @@ locals {
   s3_origin_id = "S3-${var.domain_name}"
 }
 
-resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
+resource "aws_cloudfront_origin_access_control" "default" {
   count = var.enabled ? 1 : 0
+
+  name                              = var.domain_name
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+resource "aws_cloudfront_cache_policy" "default" {
+  count = var.enabled ? 1 : 0
+
+  name        = "${module.label.id}-cache-policy"
+  min_ttl     = 0
+  default_ttl = 60
+  max_ttl     = 60
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "none"
+    }
+    headers_config {
+      header_behavior = "whitelist"
+      headers {
+        items = ["X-Original-Host"]
+      }
+    }
+    query_strings_config {
+      query_string_behavior = "none"
+    }
+  }
 }
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
   count = var.enabled ? 1 : 0
 
   origin {
-    domain_name = "${var.domain_name}.s3.amazonaws.com"
-    origin_id   = local.s3_origin_id
-
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.origin_access_identity[0].cloudfront_access_identity_path
-    }
+    domain_name              = aws_s3_bucket.default[0].bucket_regional_domain_name
+    origin_id                = local.s3_origin_id
+    origin_access_control_id = aws_cloudfront_origin_access_control.default[0].id
   }
 
   enabled             = true
@@ -289,36 +319,23 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   aliases = ["*.${var.domain_name}"]
 
   default_cache_behavior {
-    allowed_methods  = ["GET", "HEAD"]
-    cached_methods   = ["GET", "HEAD"]
-    target_origin_id = local.s3_origin_id
-
-    forwarded_values {
-      query_string = false
-
-      cookies {
-        forward = "none"
-      }
-
-      headers = ["X-Original-Host"]
-    }
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = local.s3_origin_id
+    cache_policy_id        = aws_cloudfront_cache_policy.default[0].id
+    viewer_protocol_policy = "redirect-to-https"
 
     lambda_function_association {
       event_type   = "origin-request"
-      include_body = "false"
+      include_body = false
       lambda_arn   = aws_lambda_function.lambda_origin_request[0].qualified_arn
     }
 
     lambda_function_association {
       event_type   = "viewer-request"
-      include_body = "false"
+      include_body = false
       lambda_arn   = aws_lambda_function.lambda_viewer_request[0].qualified_arn
     }
-
-    viewer_protocol_policy = "redirect-to-https"
-    min_ttl                = 0
-    default_ttl            = 60
-    max_ttl                = 60
   }
 
   price_class = var.cloudfront_price_class
