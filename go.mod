@@ -3,7 +3,7 @@ module github.com/nagelflorian/aws-s3-review-apps
 go 1.26.0
 
 require (
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.6.0
 	github.com/gruntwork-io/terratest v0.40.6
 	github.com/stretchr/testify v1.8.3
 )
