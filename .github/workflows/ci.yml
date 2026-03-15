@@ -19,6 +19,11 @@ jobs:
         run: terraform init -backend=false
       - name: Terraform Validate
         run: terraform validate
+      - uses: terraform-linters/setup-tflint@v4
+      - name: TFLint Init
+        run: tflint --init
+      - name: TFLint
+        run: tflint --format compact
 
   test:
     name: Node.js Tests
